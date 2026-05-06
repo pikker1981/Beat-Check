@@ -229,6 +229,17 @@ footer{text-align:center;padding:20px;font-size:11px;color:var(--silver);border-
 
   <div id="recordsView" class="view-section hidden">
     <div class="records-header"><span class="records-title">출결 기록</span></div>
+    <div class="month-nav" style="margin-bottom:14px">
+      <span class="month-title" id="weekTitle" style="font-size:15px"></span>
+      <div class="nav-arrows">
+        <button class="arrow-btn" onclick="changeRecordsWeek(-1)" aria-label="이전 주">
+          <svg width="14" height="14" viewBox="0 0 24 24"><polyline points="15,18 9,12 15,6"/></svg>
+        </button>
+        <button class="arrow-btn" onclick="changeRecordsWeek(1)" aria-label="다음 주">
+          <svg width="14" height="14" viewBox="0 0 24 24"><polyline points="9,18 15,12 9,6"/></svg>
+        </button>
+      </div>
+    </div>
     <div class="records-filter" id="recordsFilter"></div>
     <div class="records-list" id="recordsList"></div>
   </div>
@@ -246,7 +257,7 @@ const SCHEDULE={
   2:{label:'화요일',sessions:[{id:'tue',location:'숭의교회',time:null,students:[{id:'teacher1',name:'선생님'},{id:'teacher2',name:'여자 선생님'}]}]},
   3:{label:'수요일',sessions:[{id:'wed',location:'부평구청 연습실',time:null,students:[{id:'chanyoung',name:'찬영'}]}]},
   6:{label:'토요일',sessions:[
-    {id:'sat-am',location:'안양성결교회',time:'오전',students:[{id:'dael',name:'다엘'},{id:'jihu',name:'지후'},{id:'jian',name:'지안'},{id:'jonghwa',name:'종화'},{id:'siwon',name:'시원'}]},
+    {id:'sat-am',location:'안양성결교회',time:'오전',students:[{id:'dael',name:'다엘'},{id:'jihu',name:'지후'},{id:'jian',name:'지안'},{id:'jonghwa',name:'종화'},{id:'siwon',name:'시원'},{id:'reumi',name:'름이'}]},
     {id:'sat-pm',location:'시흥중앙성결교회',time:'오후',students:[{id:'junhyuk',name:'준혁'},{id:'junseo',name:'준서'},{id:'hangyul',name:'한결'}]}
   ]},
   0:{label:'일요일',sessions:[{id:'sun-pm',location:'',time:'오후 3시',students:[{id:'eunhyuk',name:'은혁'},{id:'uije',name:'위제'}]}]}
@@ -258,6 +269,8 @@ Object.values(SCHEDULE).forEach(d=>d.sessions.forEach(s=>s.students.forEach(st=>
 const today=new Date();
 let viewYear=today.getFullYear(),viewMonth=today.getMonth();
 let selectedDateKey=null,activeSessionTab={},currentMainTab='calendar',recordsFilter='all';
+function getWeekStart(date){const d=new Date(date.getFullYear(),date.getMonth(),date.getDate());d.setDate(d.getDate()-d.getDay());return d}
+let recordsWeekStart=getWeekStart(new Date());
 
 function loadAtt(){try{return JSON.parse(localStorage.getItem('beatcheck_att')||'{}')}catch(e){return{}}}
 function saveAtt(d){localStorage.setItem('beatcheck_att',JSON.stringify(d))}
@@ -379,17 +392,27 @@ function renderStats(){
   sec.innerHTML=`<div class="stats-grid">${students.map(([id,data])=>{const pct=data.sessions>0?Math.round(data.present/data.sessions*100):0;return`<div class="stat-card"><div class="stat-name">${data.name}</div><div class="stat-bar-row"><div class="stat-bar-bg"><div class="stat-bar-fill" style="width:${pct}%"></div></div><span class="stat-pct">${pct}%</span></div><div class="stat-sub">${data.present}/${data.sessions}회</div></div>`}).join('')}</div>`;
 }
 
+function changeRecordsWeek(dir){const d=new Date(recordsWeekStart);d.setDate(d.getDate()+dir*7);recordsWeekStart=d;renderRecords()}
+
 function renderRecords(){
   const filterDiv=document.getElementById('recordsFilter');
   filterDiv.innerHTML=`<button class="filter-pill${recordsFilter==='all'?' active':''}" onclick="setFilter('all')">전체</button>`
     +Object.entries(ALL_STUDENTS).map(([sid,name])=>`<button class="filter-pill${recordsFilter===sid?' active':''}" onclick="setFilter('${sid}')">${name}</button>`).join('');
 
+  const weekEnd=new Date(recordsWeekStart);weekEnd.setDate(weekEnd.getDate()+6);
+  const ws=recordsWeekStart,we=weekEnd;
+  const fmt=dt=>`${dt.getMonth()+1}월 ${dt.getDate()}일`;
+  const sameMonth=ws.getMonth()===we.getMonth()&&ws.getFullYear()===we.getFullYear();
+  const weekLabel=sameMonth?`${ws.getFullYear()}년 ${ws.getMonth()+1}월 ${ws.getDate()}일 – ${we.getDate()}일`:`${fmt(ws)} – ${fmt(we)}`;
+  document.getElementById('weekTitle').textContent=weekLabel;
+
   let dks=Object.keys(attendance).filter(dk=>Object.keys(attendance[dk]).length>0).sort((a,b)=>b.localeCompare(a));
   if(recordsFilter!=='all')dks=dks.filter(dk=>attendance[dk]&&attendance[dk][recordsFilter]!==undefined);
+  dks=dks.filter(dk=>{const{y,m,d}=parseDK(dk);const dt=new Date(y,m,d);return dt>=ws&&dt<=we});
 
   const listDiv=document.getElementById('recordsList');
   if(!dks.length){
-    listDiv.innerHTML=`<div class="records-empty"><div class="empty-icon">📋</div><p style="font-size:14px;color:var(--silver)">아직 기록된 출결이 없습니다</p><p>달력에서 수업 날짜를 선택해 출결을 입력해 보세요</p></div>`;
+    listDiv.innerHTML=`<div class="records-empty"><div class="empty-icon">📋</div><p style="font-size:14px;color:var(--silver)">이번 주 출결 기록이 없습니다</p><p>이전/다음 주를 확인해 보세요</p></div>`;
     return;
   }
   const wds=['일','월','화','수','목','금','토'];
