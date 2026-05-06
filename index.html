@@ -3,864 +3,438 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>드럼 출결 관리</title>
+<title>Beat Check</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/static/pretendard.css">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-
 :root{
-  --black:#000000;
-  --near-black:#262626;
-  --darkest:#090909;
-  --white:#ffffff;
-  --snow:#fafafa;
-  --light-gray:#e5e5e5;
-  --stone:#737373;
-  --silver:#a3a3a3;
-  --mid-gray:#525252;
-  --btn-dark:#404040;
-  --border-light:#d4d4d4;
+  --black:#000000;--near-black:#262626;--white:#ffffff;
+  --snow:#fafafa;--light-gray:#e5e5e5;--stone:#737373;
+  --silver:#a3a3a3;--mid-gray:#525252;--btn-dark:#404040;--border-light:#d4d4d4;
 }
+body{font-family:'Pretendard',ui-sans-serif,system-ui,-apple-system,sans-serif;background:var(--white);color:var(--near-black);min-height:100vh;-webkit-font-smoothing:antialiased}
 
-body{
-  font-family:ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,sans-serif;
-  background:var(--white);
-  color:var(--near-black);
-  min-height:100vh;
-  -webkit-font-smoothing:antialiased;
-}
-
-h1,h2,h3,.display{
-  font-family:"SF Pro Rounded","SF Pro Display",system-ui,-apple-system,sans-serif;
-  font-weight:500;
-}
-
-/* ── Nav ── */
-nav{
-  border-bottom:1px solid var(--light-gray);
-  padding:0 24px;
-  height:56px;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  position:sticky;
-  top:0;
-  background:var(--white);
-  z-index:10;
-}
-.nav-brand{
-  font-family:"SF Pro Rounded",system-ui,-apple-system,sans-serif;
-  font-weight:500;
-  font-size:17px;
-  color:var(--black);
-  display:flex;
-  align-items:center;
-  gap:8px;
-}
-.nav-brand svg{fill:none;stroke:var(--black);stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
-.nav-today-btn{
-  font-size:13px;
-  font-weight:400;
-  color:var(--stone);
-  background:none;
-  border:1px solid var(--light-gray);
-  border-radius:9999px;
-  padding:5px 14px;
-  cursor:pointer;
-  transition:background .15s,color .15s;
-}
+/* ── Fixed App Header ── */
+.app-header{position:fixed;top:0;left:0;right:0;z-index:20;background:var(--white);border-bottom:1px solid var(--light-gray)}
+.app-header-inner{max-width:760px;margin:0 auto;padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between}
+.brand{display:flex;align-items:center;gap:9px;font-size:17px;font-weight:700;letter-spacing:-.03em;color:var(--black);user-select:none}
+.brand-icon{width:28px;height:28px;background:var(--black);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.brand-icon svg{stroke:var(--white);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.nav-today-btn{font-family:'Pretendard',sans-serif;font-size:13px;color:var(--stone);background:none;border:1px solid var(--light-gray);border-radius:9999px;padding:5px 14px;cursor:pointer;transition:background .15s,color .15s}
 .nav-today-btn:hover{background:var(--light-gray);color:var(--near-black)}
 
-/* ── Layout ── */
-.app{
-  max-width:760px;
-  margin:0 auto;
-  padding:32px 24px 80px;
-}
+/* ── Main Tabs Bar ── */
+.main-tabs-bar{position:fixed;top:56px;left:0;right:0;z-index:19;background:var(--white);border-bottom:1px solid var(--light-gray)}
+.main-tabs-inner{max-width:760px;margin:0 auto;padding:0 24px;display:flex}
+.main-tab{font-family:'Pretendard',sans-serif;font-size:14px;font-weight:400;color:var(--stone);background:none;border:none;border-bottom:2px solid transparent;padding:11px 0;margin-right:24px;cursor:pointer;position:relative;bottom:-1px;transition:color .15s}
+.main-tab.active{color:var(--black);font-weight:600;border-bottom-color:var(--black)}
+.main-tab:hover:not(.active){color:var(--near-black)}
 
-/* ── Month header ── */
-.month-nav{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  margin-bottom:24px;
-}
-.month-title{
-  font-size:22px;
-  font-family:"SF Pro Rounded",system-ui,-apple-system,sans-serif;
-  font-weight:500;
-  color:var(--black);
-}
+/* ── Layout ── */
+.app{max-width:760px;margin:0 auto;padding:116px 24px 80px}
+.view-section{display:block}.view-section.hidden{display:none}
+
+/* ── Month Nav ── */
+.month-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.month-title{font-size:20px;font-weight:700;letter-spacing:-.03em;color:var(--black)}
 .nav-arrows{display:flex;gap:6px}
-.arrow-btn{
-  width:34px;height:34px;
-  border-radius:9999px;
-  border:1px solid var(--light-gray);
-  background:var(--white);
-  cursor:pointer;
-  display:flex;align-items:center;justify-content:center;
-  transition:background .15s;
-}
+.arrow-btn{width:32px;height:32px;border-radius:9999px;border:1px solid var(--light-gray);background:var(--white);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .15s}
 .arrow-btn:hover{background:var(--light-gray)}
 .arrow-btn svg{stroke:var(--near-black);stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round}
 
 /* ── Calendar ── */
-.cal-wrap{
-  border:1px solid var(--light-gray);
-  border-radius:12px;
-  overflow:hidden;
-}
-.cal-header{
-  display:grid;
-  grid-template-columns:repeat(7,1fr);
-  border-bottom:1px solid var(--light-gray);
-}
-.cal-header-cell{
-  text-align:center;
-  padding:10px 0;
-  font-size:11px;
-  font-weight:500;
-  color:var(--silver);
-  letter-spacing:.05em;
-  text-transform:uppercase;
-}
-.cal-grid{
-  display:grid;
-  grid-template-columns:repeat(7,1fr);
-}
-.cal-day{
-  aspect-ratio:1;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  font-size:14px;
-  color:var(--near-black);
-  cursor:default;
-  position:relative;
-  gap:4px;
-  border-right:1px solid var(--light-gray);
-  border-bottom:1px solid var(--light-gray);
-  transition:background .12s;
-  user-select:none;
-}
+.cal-wrap{border:1px solid var(--light-gray);border-radius:12px;overflow:hidden}
+.cal-header{display:grid;grid-template-columns:repeat(7,1fr);border-bottom:1px solid var(--light-gray);background:var(--snow)}
+.cal-header-cell{text-align:center;padding:9px 0;font-size:11px;font-weight:500;color:var(--silver);letter-spacing:.06em}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr)}
+.cal-day{aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:13px;color:var(--near-black);cursor:default;position:relative;gap:3px;border-right:1px solid var(--light-gray);border-bottom:1px solid var(--light-gray);transition:background .1s;user-select:none}
 .cal-day:nth-child(7n){border-right:none}
-.cal-day.empty{background:var(--snow)}
 .cal-day.other-month{color:var(--silver)}
-.cal-day.has-class{
-  cursor:pointer;
-}
+.cal-day.has-class{cursor:pointer}
 .cal-day.has-class:hover{background:var(--snow)}
-.cal-day.today .day-num{
-  background:var(--light-gray);
-  border-radius:9999px;
-  width:28px;height:28px;
-  display:flex;align-items:center;justify-content:center;
-  font-weight:500;
-}
-.cal-day.selected .day-num{
-  background:var(--black);
-  color:var(--white);
-  border-radius:9999px;
-  width:28px;height:28px;
-  display:flex;align-items:center;justify-content:center;
-  font-weight:500;
-}
-.cal-day.selected.today .day-num{
-  background:var(--black);
-  color:var(--white);
-}
-.day-num{
-  width:28px;height:28px;
-  display:flex;align-items:center;justify-content:center;
-  font-size:14px;
-}
-.day-dots{
-  display:flex;gap:3px;
-  height:5px;
-  align-items:center;
-}
-.day-dot{
-  width:4px;height:4px;
-  border-radius:9999px;
-  background:var(--silver);
-}
-.cal-day.selected .day-dot{background:rgba(255,255,255,.6)}
+.day-num{width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:13px;border-radius:9999px;font-weight:400;transition:background .15s,color .15s,transform .2s}
+.cal-day.today .day-num{background:var(--light-gray);font-weight:700}
+.cal-day.selected .day-num{background:var(--black);color:var(--white);font-weight:600}
+.cal-day.selected.today .day-num{background:var(--black);color:var(--white)}
 
-/* ── Detail panel ── */
-.detail-panel{
-  margin-top:20px;
-  border:1px solid var(--light-gray);
-  border-radius:12px;
-  overflow:hidden;
-  animation:slideDown .2s ease;
+/* Day pop animation */
+@keyframes dayPop{
+  0%{transform:scale(1)}
+  30%{transform:scale(.78)}
+  65%{transform:scale(1.15)}
+  100%{transform:scale(1)}
 }
-@keyframes slideDown{
-  from{opacity:0;transform:translateY(-8px)}
-  to{opacity:1;transform:translateY(0)}
-}
-.detail-date-bar{
-  padding:14px 20px;
-  border-bottom:1px solid var(--light-gray);
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  background:var(--snow);
-}
-.detail-date-label{
-  font-family:"SF Pro Rounded",system-ui,-apple-system,sans-serif;
-  font-size:15px;
-  font-weight:500;
-  color:var(--black);
-}
-.attendance-summary{
-  font-size:12px;
-  color:var(--stone);
-  background:var(--white);
-  border:1px solid var(--light-gray);
-  border-radius:9999px;
-  padding:4px 12px;
-}
+.cal-day.pop .day-num{animation:dayPop .3s cubic-bezier(.34,1.56,.64,1) both}
 
-/* ── Session block ── */
-.session-block{
-  padding:20px;
-  border-bottom:1px solid var(--light-gray);
+.day-dots{display:flex;gap:3px;height:4px;align-items:center}
+.day-dot{width:3px;height:3px;border-radius:9999px;background:var(--silver)}
+.cal-day.has-attendance .day-dot{background:var(--near-black)}
+.cal-day.selected .day-dot{background:rgba(255,255,255,.55)}
+.cal-day.selected.has-attendance .day-dot{background:rgba(255,255,255,.7)}
+
+/* ── Detail Panel ── */
+.detail-panel{margin-top:16px;border:1px solid var(--light-gray);border-radius:12px;overflow:hidden}
+@keyframes panelIn{
+  0%{opacity:0;transform:translateY(12px) scale(.97)}
+  60%{opacity:1}
+  100%{opacity:1;transform:translateY(0) scale(1)}
 }
+@keyframes panelOut{
+  0%{opacity:1;transform:translateY(0) scale(1)}
+  100%{opacity:0;transform:translateY(6px) scale(.99)}
+}
+.detail-panel.entering{animation:panelIn .3s cubic-bezier(.34,1.56,.64,1) both}
+.detail-panel.leaving{animation:panelOut .16s ease both}
+
+.detail-date-bar{padding:13px 20px;border-bottom:1px solid var(--light-gray);display:flex;align-items:center;justify-content:space-between;background:var(--snow)}
+.detail-date-label{font-size:14px;font-weight:700;color:var(--black);letter-spacing:-.01em}
+.attendance-summary{font-size:12px;color:var(--stone);background:var(--white);border:1px solid var(--light-gray);border-radius:9999px;padding:4px 12px}
+
+/* ── Session Tabs ── */
+.session-tabs{display:flex;gap:6px;padding:14px 20px 0}
+.session-tab{padding:6px 14px;border-radius:9999px;border:none;font-size:13px;font-family:'Pretendard',sans-serif;cursor:pointer;transition:background .12s,color .12s}
+.session-tab.active{background:var(--light-gray);color:var(--near-black);font-weight:600}
+.session-tab:not(.active){background:transparent;color:var(--stone)}
+.session-tab:not(.active):hover{background:var(--snow);color:var(--near-black)}
+
+/* ── Session Block ── */
+.session-block{padding:18px 20px;border-bottom:1px solid var(--light-gray)}
 .session-block:last-child{border-bottom:none}
-.session-header{
-  display:flex;
-  align-items:center;
-  gap:8px;
-  margin-bottom:14px;
-}
-.session-location{
-  font-size:12px;
-  color:var(--stone);
-  font-weight:400;
-}
-.session-time-badge{
-  font-size:11px;
-  color:var(--mid-gray);
-  background:var(--light-gray);
-  border-radius:9999px;
-  padding:2px 10px;
-  font-weight:500;
-}
-.student-list{
-  display:flex;
-  flex-wrap:wrap;
-  gap:8px;
-}
+.session-header{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.session-location{font-size:13px;color:var(--stone)}
+.session-time-badge{font-size:11px;color:var(--mid-gray);background:var(--light-gray);border-radius:9999px;padding:2px 10px;font-weight:500}
+.student-list{display:flex;flex-wrap:wrap;gap:7px}
 
-/* ── Student pill ── */
-.student-pill{
-  display:inline-flex;
-  align-items:center;
-  gap:6px;
-  padding:8px 16px;
-  border-radius:9999px;
-  border:1px solid var(--light-gray);
-  background:var(--white);
-  color:var(--btn-dark);
-  font-size:14px;
-  font-weight:400;
-  cursor:pointer;
-  transition:background .12s,color .12s,border-color .12s,transform .08s;
-  position:relative;
-}
-.student-pill:hover{
-  background:var(--snow);
-  border-color:var(--silver);
-}
-.student-pill:active{transform:scale(.97)}
-.student-pill.present{
-  background:var(--black);
-  color:var(--white);
-  border-color:var(--black);
-}
-.student-pill.present:hover{
-  background:#222;
-}
-.student-pill.absent{
-  background:var(--white);
-  color:var(--silver);
-  border-color:var(--light-gray);
-  text-decoration:line-through;
-  text-decoration-color:var(--silver);
-}
-.student-pill .pill-check{
-  width:14px;height:14px;
-  display:none;
-}
+/* ── Student Pill ── */
+.student-pill{display:inline-flex;align-items:center;gap:5px;padding:7px 15px;border-radius:9999px;border:1px solid var(--light-gray);background:var(--white);color:var(--btn-dark);font-size:14px;font-weight:400;font-family:'Pretendard',sans-serif;cursor:pointer;transition:background .12s,color .12s,border-color .12s,transform .08s;opacity:0;animation:pillIn .22s ease both}
+@keyframes pillIn{from{opacity:0;transform:translateY(8px) scale(.93)}to{opacity:1;transform:translateY(0) scale(1)}}
+.student-pill:hover{background:var(--snow);border-color:var(--silver)}
+.student-pill:active{transform:scale(.95)}
+.student-pill.present{background:var(--black);color:var(--white);border-color:var(--black)}
+.student-pill.present:hover{background:#1a1a1a}
+.student-pill.absent{background:var(--white);color:var(--silver);border-color:var(--light-gray);text-decoration:line-through;text-decoration-color:var(--border-light)}
+.pill-check,.pill-x{width:13px;height:13px;display:none;flex-shrink:0}
 .student-pill.present .pill-check{display:block}
-.student-pill .pill-x{
-  width:14px;height:14px;
-  display:none;
-}
 .student-pill.absent .pill-x{display:block}
+.hint-text{margin-top:10px;font-size:11px;color:var(--silver)}
 
-/* ── Stats section ── */
-.stats-section{
-  margin-top:32px;
-}
-.stats-title{
-  font-size:13px;
-  color:var(--stone);
-  margin-bottom:16px;
-  font-weight:500;
-  letter-spacing:.04em;
-  text-transform:uppercase;
-}
-.stats-grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(160px,1fr));
-  gap:10px;
-}
-.stat-card{
-  border:1px solid var(--light-gray);
-  border-radius:12px;
-  padding:16px;
-  background:var(--white);
-}
-.stat-name{
-  font-size:13px;
-  color:var(--stone);
-  margin-bottom:8px;
-  white-space:nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis;
-}
-.stat-bar-row{
-  display:flex;
-  align-items:center;
-  gap:8px;
-}
-.stat-bar-bg{
-  flex:1;
-  height:4px;
-  background:var(--light-gray);
-  border-radius:9999px;
-  overflow:hidden;
-}
-.stat-bar-fill{
-  height:100%;
-  background:var(--black);
-  border-radius:9999px;
-  transition:width .4s ease;
-}
-.stat-pct{
-  font-size:12px;
-  color:var(--near-black);
-  font-weight:500;
-  min-width:28px;
-  text-align:right;
-}
+/* ── Stats ── */
+.stats-section{margin-top:28px}
+.stats-title{font-size:11px;color:var(--stone);margin-bottom:12px;font-weight:500;letter-spacing:.06em;text-transform:uppercase}
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.stat-card{border:1px solid var(--light-gray);border-radius:12px;padding:14px;background:var(--white)}
+.stat-name{font-size:13px;color:var(--stone);margin-bottom:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stat-bar-row{display:flex;align-items:center;gap:8px}
+.stat-bar-bg{flex:1;height:3px;background:var(--light-gray);border-radius:9999px;overflow:hidden}
+.stat-bar-fill{height:100%;background:var(--black);border-radius:9999px;transition:width .5s ease}
+.stat-pct{font-size:12px;color:var(--near-black);font-weight:600;min-width:28px;text-align:right}
+.stat-sub{margin-top:5px;font-size:11px;color:var(--silver)}
 
-/* ── Empty state ── */
-.empty-state{
-  text-align:center;
-  padding:48px 24px;
-  color:var(--silver);
-  font-size:14px;
-}
-.empty-state p{margin-top:8px;font-size:13px;color:var(--silver)}
+/* ── Records View ── */
+.records-header{margin-bottom:16px}
+.records-title{font-size:20px;font-weight:700;letter-spacing:-.03em;color:var(--black)}
+.records-filter{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:20px}
+.filter-pill{font-family:'Pretendard',sans-serif;font-size:12px;padding:5px 13px;border-radius:9999px;border:1px solid var(--light-gray);background:var(--white);color:var(--stone);cursor:pointer;transition:background .12s,color .12s,border-color .12s}
+.filter-pill.active{background:var(--black);color:var(--white);border-color:var(--black)}
+.filter-pill:hover:not(.active){background:var(--light-gray);color:var(--near-black)}
+.records-list{display:flex;flex-direction:column;gap:10px}
 
-/* ── No-class indicator ── */
-.no-class-note{
-  text-align:center;
-  padding:32px;
-  color:var(--silver);
-  font-size:14px;
-}
+/* ── Record Card ── */
+.record-card{border:1px solid var(--light-gray);border-radius:12px;overflow:hidden;opacity:0;animation:cardIn .22s ease both}
+@keyframes cardIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.record-card-header{padding:12px 18px;background:var(--snow);border-bottom:1px solid var(--light-gray);display:flex;align-items:center;justify-content:space-between}
+.record-date-label{font-size:13px;font-weight:700;color:var(--black)}
+.record-badge{font-size:11px;padding:3px 10px;border-radius:9999px;border:1px solid var(--light-gray);color:var(--stone);background:var(--white)}
+.record-sessions{padding:14px 18px;display:flex;flex-direction:column;gap:12px}
+.record-session-row{display:flex;flex-direction:column;gap:8px}
+.record-session-label{font-size:11px;color:var(--silver);font-weight:500;letter-spacing:.04em;text-transform:uppercase}
+.record-student-row{display:flex;flex-wrap:wrap;gap:6px}
+.record-student-chip{display:inline-flex;align-items:center;gap:5px;font-size:13px;padding:4px 12px;border-radius:9999px;border:1px solid var(--light-gray);color:var(--stone);background:var(--white);font-family:'Pretendard',sans-serif}
+.record-student-chip.present{background:var(--black);color:var(--white);border-color:var(--black)}
+.record-student-chip.absent{color:var(--silver);text-decoration:line-through;text-decoration-color:var(--border-light)}
+.chip-icon{width:12px;height:12px;flex-shrink:0}
+.records-empty{text-align:center;padding:60px 24px;color:var(--silver)}
+.records-empty .empty-icon{font-size:36px;margin-bottom:12px}
+.records-empty p{font-size:13px;margin-top:6px}
 
-/* ── Tabs (session tabs for Saturday) ── */
-.session-tabs{
-  display:flex;
-  gap:6px;
-  padding:16px 20px 0;
-}
-.session-tab{
-  padding:6px 16px;
-  border-radius:9999px;
-  border:none;
-  font-size:13px;
-  cursor:pointer;
-  transition:background .12s,color .12s;
-  font-family:inherit;
-}
-.session-tab.active{
-  background:var(--light-gray);
-  color:var(--near-black);
-  font-weight:500;
-}
-.session-tab:not(.active){
-  background:transparent;
-  color:var(--stone);
-}
-.session-tab:not(.active):hover{
-  background:var(--snow);
-  color:var(--near-black);
-}
+.no-class-note{text-align:center;padding:28px;color:var(--silver);font-size:14px}
+footer{text-align:center;padding:20px;font-size:11px;color:var(--silver);border-top:1px solid var(--light-gray);margin-top:40px}
 
-/* ── Footer ── */
-footer{
-  text-align:center;
-  padding:24px;
-  font-size:12px;
-  color:var(--silver);
-  border-top:1px solid var(--light-gray);
-  margin-top:48px;
-}
-
-/* ── Mobile ── */
 @media(max-width:480px){
-  nav{padding:0 16px}
-  .app{padding:20px 16px 60px}
-  .cal-day{font-size:13px}
-  .day-num{width:26px;height:26px;font-size:13px}
-  .cal-day.today .day-num,.cal-day.selected .day-num{width:26px;height:26px}
+  .app-header-inner,.main-tabs-inner{padding:0 16px}
+  .app{padding:112px 16px 60px}
   .stats-grid{grid-template-columns:repeat(2,1fr)}
+  .day-num{width:26px;height:26px;font-size:12px}
 }
-
-/* ── Scroll ── */
-::-webkit-scrollbar{width:6px}
-::-webkit-scrollbar-track{background:transparent}
-::-webkit-scrollbar-thumb{background:var(--light-gray);border-radius:9999px}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--light-gray);border-radius:9999px}
 </style>
 </head>
 <body>
 
-<nav>
-  <div class="nav-brand">
-    <svg width="20" height="20" viewBox="0 0 24 24">
-      <circle cx="9" cy="7" r="2"/>
-      <circle cx="15" cy="7" r="2"/>
-      <path d="M5 12h14M5 12a7 7 0 0 0 14 0"/>
-      <path d="M9 17v2M15 17v2"/>
-    </svg>
-    드럼 출결 관리
-  </div>
-  <button class="nav-today-btn" onclick="goToday()">오늘</button>
-</nav>
-
-<div class="app">
-  <div class="month-nav">
-    <span class="month-title" id="monthTitle"></span>
-    <div class="nav-arrows">
-      <button class="arrow-btn" onclick="changeMonth(-1)" aria-label="이전 달">
-        <svg width="16" height="16" viewBox="0 0 24 24"><polyline points="15,18 9,12 15,6"/></svg>
-      </button>
-      <button class="arrow-btn" onclick="changeMonth(1)" aria-label="다음 달">
-        <svg width="16" height="16" viewBox="0 0 24 24"><polyline points="9,18 15,12 9,6"/></svg>
-      </button>
+<header class="app-header">
+  <div class="app-header-inner">
+    <div class="brand">
+      <div class="brand-icon">
+        <svg width="14" height="14" viewBox="0 0 14 14">
+          <circle cx="3.5" cy="5" r="1.7"/>
+          <circle cx="10.5" cy="5" r="1.7"/>
+          <line x1="3.5" y1="6.7" x2="3.5" y2="12"/>
+          <line x1="10.5" y1="6.7" x2="10.5" y2="12"/>
+          <line x1="1" y1="9.5" x2="6" y2="9.5"/>
+          <line x1="8" y1="9.5" x2="13" y2="9.5"/>
+        </svg>
+      </div>
+      Beat Check
     </div>
+    <button class="nav-today-btn" onclick="goToday()">오늘</button>
   </div>
+</header>
 
-  <div class="cal-wrap">
-    <div class="cal-header">
-      <div class="cal-header-cell">일</div>
-      <div class="cal-header-cell">월</div>
-      <div class="cal-header-cell">화</div>
-      <div class="cal-header-cell">수</div>
-      <div class="cal-header-cell">목</div>
-      <div class="cal-header-cell">금</div>
-      <div class="cal-header-cell">토</div>
-    </div>
-    <div class="cal-grid" id="calGrid"></div>
+<div class="main-tabs-bar">
+  <div class="main-tabs-inner">
+    <button class="main-tab active" id="tab-calendar" onclick="switchMainTab('calendar')">달력</button>
+    <button class="main-tab" id="tab-records" onclick="switchMainTab('records')">출결 기록</button>
   </div>
-
-  <div id="detailPanel"></div>
-
-  <div class="stats-section" id="statsSection"></div>
 </div>
 
-<footer>드럼 수업 출결 관리 시스템</footer>
+<div class="app">
+  <!-- Calendar View -->
+  <div id="calendarView" class="view-section">
+    <div class="month-nav">
+      <span class="month-title" id="monthTitle"></span>
+      <div class="nav-arrows">
+        <button class="arrow-btn" onclick="changeMonth(-1)" aria-label="이전 달">
+          <svg width="14" height="14" viewBox="0 0 24 24"><polyline points="15,18 9,12 15,6"/></svg>
+        </button>
+        <button class="arrow-btn" onclick="changeMonth(1)" aria-label="다음 달">
+          <svg width="14" height="14" viewBox="0 0 24 24"><polyline points="9,18 15,12 9,6"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="cal-wrap">
+      <div class="cal-header">
+        <div class="cal-header-cell">일</div><div class="cal-header-cell">월</div>
+        <div class="cal-header-cell">화</div><div class="cal-header-cell">수</div>
+        <div class="cal-header-cell">목</div><div class="cal-header-cell">금</div>
+        <div class="cal-header-cell">토</div>
+      </div>
+      <div class="cal-grid" id="calGrid"></div>
+    </div>
+    <div id="detailPanel"></div>
+    <div class="stats-section" id="statsSection"></div>
+  </div>
+
+  <!-- Records View -->
+  <div id="recordsView" class="view-section hidden">
+    <div class="records-header"><span class="records-title">출결 기록</span></div>
+    <div class="records-filter" id="recordsFilter"></div>
+    <div class="records-list" id="recordsList"></div>
+  </div>
+</div>
+
+<footer>Beat Check — 드럼 수업 출결 관리</footer>
 
 <script>
-// ── Schedule Data ──────────────────────────────────────────────
-const SCHEDULE = {
-  2: { // Tuesday 화요일
-    label: '화요일',
-    sessions: [{
-      id: 'tue',
-      location: '숭의교회',
-      time: null,
-      students: [
-        { id: 'teacher1', name: '선생님' },
-        { id: 'teacher2', name: '여자 선생님' }
-      ]
-    }]
-  },
-  3: { // Wednesday 수요일
-    label: '수요일',
-    sessions: [{
-      id: 'wed',
-      location: '부평구청 연습실',
-      time: null,
-      students: [
-        { id: 'chanyoung', name: '찬영' }
-      ]
-    }]
-  },
-  6: { // Saturday 토요일
-    label: '토요일',
-    sessions: [
-      {
-        id: 'sat-am',
-        location: '안양성결교회',
-        time: '오전',
-        students: [
-          { id: 'dael',    name: '다엘' },
-          { id: 'jihu',    name: '지후' },
-          { id: 'jian',    name: '지안' },
-          { id: 'jonghwa', name: '종화' },
-          { id: 'siwon',   name: '시원' }
-        ]
-      },
-      {
-        id: 'sat-pm',
-        location: '시흥중앙성결교회',
-        time: '오후',
-        students: [
-          { id: 'junhyuk', name: '준혁' },
-          { id: 'junseo',  name: '준서' },
-          { id: 'hangyul', name: '한결' }
-        ]
-      }
-    ]
-  },
-  0: { // Sunday 일요일
-    label: '일요일',
-    sessions: [{
-      id: 'sun-pm',
-      location: '',
-      time: '오후 3시',
-      students: [
-        { id: 'eunhyuk', name: '은혁' },
-        { id: 'uije',    name: '위제' }
-      ]
-    }]
-  }
+const SCHEDULE={
+  2:{label:'화요일',sessions:[{id:'tue',location:'숭의교회',time:null,students:[{id:'teacher1',name:'선생님'},{id:'teacher2',name:'여자 선생님'}]}]},
+  3:{label:'수요일',sessions:[{id:'wed',location:'부평구청 연습실',time:null,students:[{id:'chanyoung',name:'찬영'}]}]},
+  6:{label:'토요일',sessions:[
+    {id:'sat-am',location:'안양성결교회',time:'오전',students:[{id:'dael',name:'다엘'},{id:'jihu',name:'지후'},{id:'jian',name:'지안'},{id:'jonghwa',name:'종화'},{id:'siwon',name:'시원'}]},
+    {id:'sat-pm',location:'시흥중앙성결교회',time:'오후',students:[{id:'junhyuk',name:'준혁'},{id:'junseo',name:'준서'},{id:'hangyul',name:'한결'}]}
+  ]},
+  0:{label:'일요일',sessions:[{id:'sun-pm',location:'',time:'오후 3시',students:[{id:'eunhyuk',name:'은혁'},{id:'uije',name:'위제'}]}]}
 };
 
-// ── State ─────────────────────────────────────────────────────
-const today = new Date();
-let viewYear  = today.getFullYear();
-let viewMonth = today.getMonth();
-let selectedDateKey = null;
-let activeSessionTab = {}; // dateKey → sessionId
+const ALL_STUDENTS={};
+Object.values(SCHEDULE).forEach(d=>d.sessions.forEach(s=>s.students.forEach(st=>{ALL_STUDENTS[st.id]=st.name})));
 
-function loadAttendance(){
-  try{ return JSON.parse(localStorage.getItem('drum_attendance') || '{}'); }
-  catch(e){ return {}; }
-}
-function saveAttendance(data){
-  localStorage.setItem('drum_attendance', JSON.stringify(data));
-}
-let attendance = loadAttendance();
+const today=new Date();
+let viewYear=today.getFullYear(),viewMonth=today.getMonth();
+let selectedDateKey=null,activeSessionTab={},currentMainTab='calendar',recordsFilter='all';
 
-// ── Helpers ────────────────────────────────────────────────────
-function dateKey(y,m,d){ return `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`; }
-function parseDK(dk){ const [y,m,d]=dk.split('-').map(Number); return {y,m:m-1,d}; }
+function loadAtt(){try{return JSON.parse(localStorage.getItem('beatcheck_att')||'{}')}catch(e){return{}}}
+function saveAtt(d){localStorage.setItem('beatcheck_att',JSON.stringify(d))}
+let attendance=loadAtt();
 
-function getDayOfWeek(y,m,d){ return new Date(y,m,d).getDay(); }
+function dateKey(y,m,d){return`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`}
+function parseDK(dk){const[y,m,d]=dk.split('-').map(Number);return{y,m:m-1,d}}
+function getDOW(y,m,d){return new Date(y,m,d).getDay()}
+function getSchedForDate(dk){const{y,m,d}=parseDK(dk);return SCHEDULE[getDOW(y,m,d)]||null}
+function isPresent(dk,sid){return!!(attendance[dk]&&attendance[dk][sid]===true)}
+function isAbsent(dk,sid){return!!(attendance[dk]&&attendance[dk][sid]===false)}
+function isFuture(dk){const{y,m,d}=parseDK(dk);return new Date(y,m,d)>new Date(today.getFullYear(),today.getMonth(),today.getDate())}
 
-function getScheduleForDate(dk){
-  const {y,m,d} = parseDK(dk);
-  const dow = getDayOfWeek(y,m,d);
-  return SCHEDULE[dow] || null;
-}
-
-function isPresent(dk, studentId){
-  return !!(attendance[dk] && attendance[dk][studentId] === true);
-}
-function isAbsent(dk, studentId){
-  return !!(attendance[dk] && attendance[dk][studentId] === false);
-}
-function isPristine(dk, studentId){
-  return !(attendance[dk] && attendance[dk][studentId] !== undefined);
+function toggleStudent(dk,sid){
+  if(!attendance[dk])attendance[dk]={};
+  const c=attendance[dk][sid];
+  if(c===undefined)attendance[dk][sid]=true;
+  else if(c===true)attendance[dk][sid]=false;
+  else delete attendance[dk][sid];
+  saveAtt(attendance);
+  renderCalendar();renderDetail();renderStats();
+  if(currentMainTab==='records')renderRecords();
 }
 
-function toggleStudent(dk, studentId){
-  if(!attendance[dk]) attendance[dk] = {};
-  const cur = attendance[dk][studentId];
-  if(cur === undefined){ attendance[dk][studentId] = true; }       // pristine → present
-  else if(cur === true){ attendance[dk][studentId] = false; }      // present → absent
-  else { delete attendance[dk][studentId]; }                       // absent → pristine (reset)
-  saveAttendance(attendance);
-  renderDetail();
-  renderStats();
-}
-
-// ── Calendar Render ────────────────────────────────────────────
+// ── Calendar ──
 function renderCalendar(){
-  const title = document.getElementById('monthTitle');
-  const grid  = document.getElementById('calGrid');
-
-  const months = ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
-  title.textContent = `${viewYear}년 ${months[viewMonth]}`;
-
-  const firstDay = new Date(viewYear, viewMonth, 1).getDay();
-  const lastDate = new Date(viewYear, viewMonth+1, 0).getDate();
-  const prevLastDate = new Date(viewYear, viewMonth, 0).getDate();
-
-  let html = '';
-
-  // prev month padding
-  for(let i=0; i<firstDay; i++){
-    const pday = prevLastDate - firstDay + 1 + i;
-    const pm = viewMonth - 1, py = pm < 0 ? viewYear-1 : viewYear;
-    const pm2 = pm < 0 ? 11 : pm;
-    const dk = dateKey(py, pm2, pday);
-    const dow = getDayOfWeek(py, pm2, pday);
-    const hasCls = !!SCHEDULE[dow];
-    html += dayCell(pday, dk, hasCls, false, false, true);
+  const months=['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
+  document.getElementById('monthTitle').textContent=`${viewYear}년 ${months[viewMonth]}`;
+  const firstDay=new Date(viewYear,viewMonth,1).getDay();
+  const lastDate=new Date(viewYear,viewMonth+1,0).getDate();
+  const prevLast=new Date(viewYear,viewMonth,0).getDate();
+  let html='';
+  for(let i=0;i<firstDay;i++){
+    const pd=prevLast-firstDay+1+i,pm=viewMonth-1,py=pm<0?viewYear-1:viewYear,pm2=pm<0?11:pm;
+    html+=dayCell(pd,dateKey(py,pm2,pd),true);
   }
-
-  // current month
-  for(let d=1; d<=lastDate; d++){
-    const dk = dateKey(viewYear, viewMonth, d);
-    const dow = getDayOfWeek(viewYear, viewMonth, d);
-    const hasCls = !!SCHEDULE[dow];
-    const isTdy = (d===today.getDate() && viewMonth===today.getMonth() && viewYear===today.getFullYear());
-    const isSel = (dk === selectedDateKey);
-    html += dayCell(d, dk, hasCls, isTdy, isSel, false);
+  for(let d=1;d<=lastDate;d++){
+    const dk=dateKey(viewYear,viewMonth,d);
+    const isT=(d===today.getDate()&&viewMonth===today.getMonth()&&viewYear===today.getFullYear());
+    html+=dayCell(d,dk,false,isT,dk===selectedDateKey);
   }
-
-  // next month padding
-  const totalCells = firstDay + lastDate;
-  const remainder = 7 - (totalCells % 7);
-  if(remainder < 7){
-    for(let d=1; d<=remainder; d++){
-      const nm = viewMonth+1, ny = nm>11?viewYear+1:viewYear, nm2=nm>11?0:nm;
-      const dk = dateKey(ny, nm2, d);
-      const dow = getDayOfWeek(ny, nm2, d);
-      const hasCls = !!SCHEDULE[dow];
-      html += dayCell(d, dk, hasCls, false, false, true);
-    }
-  }
-
-  grid.innerHTML = html;
+  const rem=7-((firstDay+lastDate)%7);
+  if(rem<7){for(let d=1;d<=rem;d++){const nm=viewMonth+1,ny=nm>11?viewYear+1:viewYear,nm2=nm>11?0:nm;html+=dayCell(d,dateKey(ny,nm2,d),true)}}
+  document.getElementById('calGrid').innerHTML=html;
 }
 
-function dayCell(d, dk, hasCls, isToday, isSel, isOther){
-  const sched = SCHEDULE[getDayOfWeek(...dk.split('-').map((v,i)=>i===1?Number(v)-1:Number(v)))];
-  const dotCount = sched ? sched.sessions.length : 0;
-  const dots = Array(dotCount).fill('<span class="day-dot"></span>').join('');
-
-  const classes = [
-    'cal-day',
-    hasCls ? 'has-class' : '',
-    isToday ? 'today' : '',
-    isSel   ? 'selected' : '',
-    isOther ? 'other-month' : ''
-  ].filter(Boolean).join(' ');
-
-  const clickAttr = hasCls ? `onclick="selectDate('${dk}')"` : '';
-  return `<div class="${classes}" ${clickAttr}>
-    <span class="day-num">${d}</span>
-    ${dotCount > 0 ? `<div class="day-dots">${dots}</div>` : '<div style="height:5px"></div>'}
-  </div>`;
+function dayCell(d,dk,isOther,isToday=false,isSel=false){
+  const{y,m}=parseDK(dk);const dayOfMonth=parseDK(dk).d;
+  const dow=getDOW(parseDK(dk).y,parseDK(dk).m,parseDK(dk).d);
+  const hasCls=!!SCHEDULE[dow];
+  const dotCount=hasCls?SCHEDULE[dow].sessions.length:0;
+  const hasAtt=!!(attendance[dk]&&Object.keys(attendance[dk]).length>0);
+  const cls=['cal-day',hasCls?'has-class':'',isToday?'today':'',isSel?'selected':'',isOther?'other-month':'',hasAtt&&!isOther?'has-attendance':''].filter(Boolean).join(' ');
+  const click=hasCls?`onclick="selectDate('${dk}')"` :'';
+  const dots=Array(dotCount).fill('<span class="day-dot"></span>').join('');
+  return`<div class="${cls}" ${click} id="day-${dk}"><span class="day-num">${d}</span>${dotCount>0?`<div class="day-dots">${dots}</div>`:'<div style="height:4px"></div>'}</div>`;
 }
 
-// ── Select Date ────────────────────────────────────────────────
 function selectDate(dk){
-  if(selectedDateKey === dk){
-    selectedDateKey = null;
-  } else {
-    selectedDateKey = dk;
-    // default active tab
-    const sched = getScheduleForDate(dk);
-    if(sched && !activeSessionTab[dk]){
-      activeSessionTab[dk] = sched.sessions[0].id;
-    }
+  if(selectedDateKey===dk){
+    const p=document.getElementById('detailPanel'),inner=p.querySelector('.detail-panel');
+    if(inner){inner.classList.remove('entering');inner.classList.add('leaving');setTimeout(()=>{selectedDateKey=null;renderCalendar();p.innerHTML=''},160)}
+    else{selectedDateKey=null;renderCalendar();document.getElementById('detailPanel').innerHTML=''}
+    return;
   }
+  selectedDateKey=dk;
+  const sched=getSchedForDate(dk);
+  if(sched&&!activeSessionTab[dk])activeSessionTab[dk]=sched.sessions[0].id;
   renderCalendar();
-  renderDetail();
+  // Pop animation
+  const cell=document.getElementById(`day-${dk}`);
+  if(cell){cell.classList.remove('pop');void cell.offsetWidth;cell.classList.add('pop');setTimeout(()=>cell.classList.remove('pop'),350)}
+  renderDetail(true);
+  setTimeout(()=>{const p=document.getElementById('detailPanel');if(p)p.scrollIntoView({behavior:'smooth',block:'nearest'})},60);
 }
 
-// ── Detail Panel ───────────────────────────────────────────────
-function renderDetail(){
-  const panel = document.getElementById('detailPanel');
-  if(!selectedDateKey){
-    panel.innerHTML = '';
-    return;
-  }
-
-  const sched = getScheduleForDate(selectedDateKey);
-  if(!sched){
-    panel.innerHTML = `<div class="detail-panel"><div class="no-class-note">이날은 수업이 없습니다</div></div>`;
-    return;
-  }
-
-  const {y,m,d} = parseDK(selectedDateKey);
-  const weekdays = ['일','월','화','수','목','금','토'];
-  const dow = getDayOfWeek(y,m,d);
-  const dateLabel = `${y}년 ${m+1}월 ${d}일 (${weekdays[dow]})`;
-
-  // Count all students present/total for the day
-  let totalPresent=0, totalStudents=0;
-  sched.sessions.forEach(s=>{
-    s.students.forEach(st=>{
-      totalStudents++;
-      if(isPresent(selectedDateKey, st.id)) totalPresent++;
-    });
-  });
-
-  const isFuture = new Date(y,m,d) > new Date(today.getFullYear(), today.getMonth(), today.getDate());
-
-  // Tabs (only for multi-session days like Saturday)
-  const multiSession = sched.sessions.length > 1;
-  const activeTab = activeSessionTab[selectedDateKey] || sched.sessions[0].id;
-
-  let tabsHtml = '';
-  if(multiSession){
-    tabsHtml = `<div class="session-tabs">` +
-      sched.sessions.map(s=>`
-        <button class="session-tab${s.id===activeTab?' active':''}" onclick="switchTab('${selectedDateKey}','${s.id}')">
-          ${s.location}${s.time?` ${s.time}`:''}
-        </button>`
-      ).join('') +
-      `</div>`;
-  }
-
-  // Sessions to render
-  const sessionsToRender = multiSession
-    ? sched.sessions.filter(s => s.id === activeTab)
-    : sched.sessions;
-
-  let sessionsHtml = sessionsToRender.map(session => {
-    const studentPills = session.students.map(st => {
-      const present = isPresent(selectedDateKey, st.id);
-      const absent  = isAbsent(selectedDateKey, st.id);
-      let pillClass = 'student-pill';
-      if(present) pillClass += ' present';
-      if(absent)  pillClass += ' absent';
-
-      const checkIcon = `<svg class="pill-check" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="2.5,8 6,11.5 13.5,4.5"/></svg>`;
-      const xIcon = `<svg class="pill-x" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="4" y1="4" x2="12" y2="12"/><line x1="12" y1="4" x2="4" y2="12"/></svg>`;
-
-      return `<button class="${pillClass}" onclick="toggleStudent('${selectedDateKey}','${st.id}')">
-        ${checkIcon}${xIcon}${st.name}
-      </button>`;
+function renderDetail(animate=false){
+  const panel=document.getElementById('detailPanel');
+  if(!selectedDateKey){panel.innerHTML='';return}
+  const sched=getSchedForDate(selectedDateKey);
+  if(!sched){panel.innerHTML=`<div class="detail-panel ${animate?'entering':''}"><div class="no-class-note">이날은 수업이 없습니다</div></div>`;return}
+  const{y,m,d}=parseDK(selectedDateKey);
+  const wds=['일','월','화','수','목','금','토'];
+  const dateLabel=`${y}년 ${m+1}월 ${d}일 (${wds[getDOW(y,m,d)]})`;
+  let tp=0,ts=0;
+  sched.sessions.forEach(s=>s.students.forEach(st=>{ts++;if(isPresent(selectedDateKey,st.id))tp++}));
+  const future=isFuture(selectedDateKey);
+  const multi=sched.sessions.length>1;
+  const activeTab=activeSessionTab[selectedDateKey]||sched.sessions[0].id;
+  const tabsHtml=multi?`<div class="session-tabs">${sched.sessions.map(s=>`<button class="session-tab${s.id===activeTab?' active':''}" onclick="switchTab('${selectedDateKey}','${s.id}')">${s.location}${s.time?` ${s.time}`:''}</button>`).join('')}</div>`:'';
+  const sessToRender=multi?sched.sessions.filter(s=>s.id===activeTab):sched.sessions;
+  const checkSvg=`<svg class="pill-check" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><polyline points="2,6.5 5,9.5 11,3.5"/></svg>`;
+  const xSvg=`<svg class="pill-x" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="3" y1="3" x2="10" y2="10"/><line x1="10" y1="3" x2="3" y2="10"/></svg>`;
+  const sessHtml=sessToRender.map(session=>{
+    const pills=session.students.map((st,i)=>{
+      const p=isPresent(selectedDateKey,st.id),a=isAbsent(selectedDateKey,st.id);
+      return`<button class="student-pill${p?' present':''}${a?' absent':''}" style="animation-delay:${i*.045}s" onclick="toggleStudent('${selectedDateKey}','${st.id}')">${checkSvg}${xSvg}${st.name}</button>`;
     }).join('');
-
-    const sessionPresent = session.students.filter(st=>isPresent(selectedDateKey,st.id)).length;
-    const sessionTotal   = session.students.length;
-    const locLabel = [session.location, session.time].filter(Boolean).join(' · ');
-
-    return `<div class="session-block">
-      <div class="session-header">
-        ${session.location ? `<span class="session-location">${session.location}</span>` : ''}
-        ${session.time ? `<span class="session-time-badge">${session.time}</span>` : ''}
-      </div>
-      <div class="student-list">${studentPills}</div>
-      ${!isFuture && sessionTotal>0 ? `<p style="margin-top:12px;font-size:12px;color:var(--silver)">
-        클릭: 출석 → 결석 → 초기화 순으로 전환됩니다
-      </p>` : ''}
-    </div>`;
+    return`<div class="session-block"><div class="session-header">${session.location?`<span class="session-location">${session.location}</span>`:''} ${session.time?`<span class="session-time-badge">${session.time}</span>`:''}</div><div class="student-list">${pills}</div>${!future?`<p class="hint-text">탭: 출석 → 결석 → 초기화</p>`:''}</div>`;
   }).join('');
-
-  const summaryText = isFuture ? '예정' : `${totalPresent} / ${totalStudents}명 출석`;
-
-  panel.innerHTML = `<div class="detail-panel">
-    <div class="detail-date-bar">
-      <span class="detail-date-label">${dateLabel}</span>
-      <span class="attendance-summary">${summaryText}</span>
-    </div>
-    ${tabsHtml}
-    ${sessionsHtml}
-  </div>`;
+  const summary=future?'예정':ts===0?'학생 없음':`${tp} / ${ts}명 출석`;
+  panel.innerHTML=`<div class="detail-panel ${animate?'entering':''}"><div class="detail-date-bar"><span class="detail-date-label">${dateLabel}</span><span class="attendance-summary">${summary}</span></div>${tabsHtml}${sessHtml}</div>`;
 }
 
-function switchTab(dk, sessionId){
-  activeSessionTab[dk] = sessionId;
-  renderDetail();
-}
+function switchTab(dk,sid){activeSessionTab[dk]=sid;renderDetail()}
 
-// ── Stats ──────────────────────────────────────────────────────
 function renderStats(){
-  const sec = document.getElementById('statsSection');
-
-  // Build stats per student: count sessions held (past, not future), count present
-  const statsMap = {}; // studentId → { name, sessions, present }
-
-  Object.values(SCHEDULE).forEach(dayInfo => {
-    dayInfo.sessions.forEach(session => {
-      session.students.forEach(st => {
-        if(!statsMap[st.id]) statsMap[st.id] = { name: st.name, sessions: 0, present: 0 };
-      });
+  const sec=document.getElementById('statsSection');
+  const sm={};
+  Object.values(SCHEDULE).forEach(d=>d.sessions.forEach(s=>s.students.forEach(st=>{if(!sm[st.id])sm[st.id]={name:st.name,sessions:0,present:0}})));
+  const todayD=new Date(today.getFullYear(),today.getMonth(),today.getDate());
+  Object.entries(attendance).forEach(([dk,records])=>{
+    const{y,m,d}=parseDK(dk);if(new Date(y,m,d)>todayD)return;
+    Object.entries(records).forEach(([sid,val])=>{
+      if(!sm[sid])return;
+      if(val===true){sm[sid].present++;sm[sid].sessions++}
+      else if(val===false)sm[sid].sessions++;
     });
   });
+  const students=Object.entries(sm).filter(([,v])=>v.sessions>0).sort(([,a],[,b])=>(b.present/Math.max(b.sessions,1))-(a.present/Math.max(a.sessions,1)));
+  if(!students.length){sec.innerHTML='';return}
+  sec.innerHTML=`<div class="stats-title">출석률</div><div class="stats-grid">${students.map(([id,data])=>{const pct=data.sessions>0?Math.round(data.present/data.sessions*100):0;return`<div class="stat-card"><div class="stat-name">${data.name}</div><div class="stat-bar-row"><div class="stat-bar-bg"><div class="stat-bar-fill" style="width:${pct}%"></div></div><span class="stat-pct">${pct}%</span></div><div class="stat-sub">${data.present}/${data.sessions}회</div></div>`}).join('')}</div>`;
+}
 
-  // Count from attendance data
-  Object.entries(attendance).forEach(([dk, records]) => {
-    const {y,m,d} = parseDK(dk);
-    const date = new Date(y,m,d);
-    const todayDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-    if(date > todayDate) return; // skip future
+// ── Records ──
+function renderRecords(){
+  const filterDiv=document.getElementById('recordsFilter');
+  filterDiv.innerHTML=`<button class="filter-pill${recordsFilter==='all'?' active':''}" onclick="setFilter('all')">전체</button>`
+    +Object.entries(ALL_STUDENTS).map(([sid,name])=>`<button class="filter-pill${recordsFilter===sid?' active':''}" onclick="setFilter('${sid}')">${name}</button>`).join('');
 
-    Object.entries(records).forEach(([studentId, val]) => {
-      if(!statsMap[studentId]) return;
-      if(val === true){
-        statsMap[studentId].present++;
-        statsMap[studentId].sessions++;
-      } else if(val === false){
-        statsMap[studentId].sessions++;
-      }
-    });
-  });
+  let dks=Object.keys(attendance).filter(dk=>Object.keys(attendance[dk]).length>0).sort((a,b)=>b.localeCompare(a));
+  if(recordsFilter!=='all')dks=dks.filter(dk=>attendance[dk]&&attendance[dk][recordsFilter]!==undefined);
 
-  // Only show students who have at least one recorded session
-  const students = Object.entries(statsMap)
-    .filter(([,v]) => v.sessions > 0)
-    .sort(([,a],[,b]) => (b.present/Math.max(b.sessions,1)) - (a.present/Math.max(a.sessions,1)));
-
-  if(students.length === 0){
-    sec.innerHTML = '';
+  const listDiv=document.getElementById('recordsList');
+  if(!dks.length){
+    listDiv.innerHTML=`<div class="records-empty"><div class="empty-icon">📋</div><p style="font-size:14px;color:var(--silver)">아직 기록된 출결이 없습니다</p><p>달력에서 수업 날짜를 선택해 출결을 입력해 보세요</p></div>`;
     return;
   }
+  const wds=['일','월','화','수','목','금','토'];
+  const checkSvg=`<svg class="chip-icon" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><polyline points="1.5,6 4.5,9 10.5,3"/></svg>`;
+  const xSvg=`<svg class="chip-icon" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="2.5" y1="2.5" x2="9.5" y2="9.5"/><line x1="9.5" y1="2.5" x2="2.5" y2="9.5"/></svg>`;
 
-  const cards = students.map(([id, data]) => {
-    const pct = data.sessions > 0 ? Math.round(data.present / data.sessions * 100) : 0;
-    return `<div class="stat-card">
-      <div class="stat-name">${data.name}</div>
-      <div class="stat-bar-row">
-        <div class="stat-bar-bg">
-          <div class="stat-bar-fill" style="width:${pct}%"></div>
-        </div>
-        <span class="stat-pct">${pct}%</span>
-      </div>
-      <div style="margin-top:6px;font-size:11px;color:var(--silver)">${data.present}/${data.sessions}회</div>
-    </div>`;
+  listDiv.innerHTML=dks.map((dk,idx)=>{
+    const{y,m,d}=parseDK(dk);const dow=getDOW(y,m,d);
+    const sched=SCHEDULE[dow];
+    const dateLabel=`${y}년 ${m+1}월 ${d}일 (${wds[dow]})`;
+    let tp=0,ts=0;
+    const sessHtml=(sched?sched.sessions:[]).map(session=>{
+      const studs=recordsFilter==='all'?session.students:session.students.filter(st=>st.id===recordsFilter);
+      if(!studs.length)return'';
+      const chips=studs.map(st=>{
+        const p=isPresent(dk,st.id),a=isAbsent(dk,st.id);ts++;if(p)tp++;
+        return`<span class="record-student-chip${p?' present':''}${a?' absent':''}">${p?checkSvg:''}${a?xSvg:''}${st.name}</span>`;
+      }).join('');
+      const loc=[session.location,session.time].filter(Boolean).join(' · ');
+      return`<div class="record-session-row">${loc?`<span class="record-session-label">${loc}</span>`:''}<div class="record-student-row">${chips}</div></div>`;
+    }).join('');
+    const badge=isFuture(dk)?'예정':`${tp}/${ts}명`;
+    return`<div class="record-card" style="animation-delay:${idx*.04}s"><div class="record-card-header"><span class="record-date-label">${dateLabel}</span><span class="record-badge">${badge}</span></div><div class="record-sessions">${sessHtml||'<span style="font-size:13px;color:var(--silver)">기록 없음</span>'}</div></div>`;
   }).join('');
-
-  sec.innerHTML = `<div class="stats-title">출석률</div>
-    <div class="stats-grid">${cards}</div>`;
 }
 
-// ── Month Navigation ────────────────────────────────────────────
+function setFilter(val){recordsFilter=val;renderRecords()}
+
+function switchMainTab(tab){
+  currentMainTab=tab;
+  document.getElementById('calendarView').classList.toggle('hidden',tab!=='calendar');
+  document.getElementById('recordsView').classList.toggle('hidden',tab!=='records');
+  document.getElementById('tab-calendar').classList.toggle('active',tab==='calendar');
+  document.getElementById('tab-records').classList.toggle('active',tab==='records');
+  if(tab==='records')renderRecords();
+}
+
 function changeMonth(dir){
-  viewMonth += dir;
-  if(viewMonth > 11){ viewMonth=0; viewYear++; }
-  if(viewMonth < 0) { viewMonth=11; viewYear--; }
-  selectedDateKey = null;
-  renderCalendar();
-  renderDetail();
+  viewMonth+=dir;
+  if(viewMonth>11){viewMonth=0;viewYear++}if(viewMonth<0){viewMonth=11;viewYear--}
+  selectedDateKey=null;renderCalendar();document.getElementById('detailPanel').innerHTML='';
 }
-
 function goToday(){
-  viewYear  = today.getFullYear();
-  viewMonth = today.getMonth();
-  selectedDateKey = null;
-  renderCalendar();
-  renderDetail();
+  viewYear=today.getFullYear();viewMonth=today.getMonth();selectedDateKey=null;
+  switchMainTab('calendar');renderCalendar();document.getElementById('detailPanel').innerHTML='';
 }
 
-// ── Init ───────────────────────────────────────────────────────
-renderCalendar();
-renderDetail();
-renderStats();
+renderCalendar();renderStats();
 </script>
 </body>
 </html>
