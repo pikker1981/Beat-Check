@@ -44,15 +44,19 @@ body{font-family:'Pretendard',ui-sans-serif,system-ui,-apple-system,sans-serif;b
 
 /* ── Calendar ── */
 .cal-wrap{border:1px solid var(--light-gray);border-radius:12px;overflow:hidden}
-.cal-header{display:grid;grid-template-columns:repeat(7,1fr);border-bottom:1px solid var(--light-gray);background:var(--snow)}
-.cal-header-cell{text-align:center;padding:9px 0;font-size:11px;font-weight:500;color:var(--silver);letter-spacing:.06em}
+:root{
+  --cobalt:#0047AB;--cobalt-light:#1a5fc8;--cobalt-dim:rgba(0,71,171,.08);--cobalt-ring:rgba(0,71,171,.22);
+}
+.cal-header{display:grid;grid-template-columns:repeat(7,1fr);border-bottom:none;background:linear-gradient(135deg,#0047AB 0%,#1a5fc8 100%)}
+.cal-header-cell{text-align:center;padding:10px 0;font-size:11px;font-weight:700;color:rgba(255,255,255,.92);letter-spacing:.1em;text-shadow:0 1px 2px rgba(0,0,0,.18)}
 .cal-grid{display:grid;grid-template-columns:repeat(7,1fr)}
 .cal-day{aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:13px;color:var(--near-black);cursor:default;position:relative;gap:3px;border-right:1px solid var(--light-gray);border-bottom:1px solid var(--light-gray);transition:background .1s;user-select:none}
 .cal-day:nth-child(7n){border-right:none}
 .cal-day.other-month{color:var(--silver)}
 .cal-day.has-class{cursor:pointer}
-.cal-day.has-class:hover{background:var(--snow)}
-.day-num{width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:13px;border-radius:9999px;font-weight:400;transition:background .15s,color .15s,transform .2s}
+.cal-day.has-class:hover{background:var(--cobalt-dim)}
+.cal-day.has-class:not(.selected):hover .day-num{background:var(--cobalt-ring);color:var(--cobalt);transform:scale(1.18);box-shadow:0 0 0 3px rgba(0,71,171,.15),0 2px 8px rgba(0,71,171,.18)}
+.day-num{width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:13px;border-radius:9999px;font-weight:400;transition:background .18s,color .18s,transform .22s cubic-bezier(.34,1.56,.64,1),box-shadow .22s}
 .cal-day.today .day-num{background:var(--light-gray);font-weight:700}
 .cal-day.selected .day-num{background:var(--black);color:var(--white);font-weight:600}
 .cal-day.selected.today .day-num{background:var(--black);color:var(--white)}
