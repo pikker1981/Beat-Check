@@ -123,7 +123,7 @@ body{font-family:'Pretendard',ui-sans-serif,system-ui,-apple-system,sans-serif;b
 .hint-text{margin-top:10px;font-size:11px;color:var(--silver)}
 
 /* ── Stats ── */
-.stats-section{margin-top:28px}
+.stats-section{margin-top:0}
 .stats-title{font-size:11px;color:var(--stone);margin-bottom:12px;font-weight:500;letter-spacing:.06em;text-transform:uppercase}
 .stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
 .stat-card{border:1px solid var(--light-gray);border-radius:12px;padding:14px;background:var(--white)}
@@ -162,6 +162,13 @@ body{font-family:'Pretendard',ui-sans-serif,system-ui,-apple-system,sans-serif;b
 .records-empty p{font-size:13px;margin-top:6px}
 
 .no-class-note{text-align:center;padding:28px;color:var(--silver);font-size:14px}
+/* ── Cat Banner ── */
+.cat-banner{margin-top:20px;border-radius:16px;overflow:hidden;position:relative;border:1px solid var(--light-gray);background:var(--snow);cursor:default}
+.cat-banner-img{width:100%;display:block;object-fit:cover;object-position:center 30%;max-height:200px;transition:transform .5s ease}
+.cat-banner:hover .cat-banner-img{transform:scale(1.03)}
+.cat-banner-overlay{position:absolute;bottom:0;left:0;right:0;padding:28px 20px 16px;background:linear-gradient(to top,rgba(20,20,30,.55) 0%,transparent 100%)}
+.cat-banner-label{display:block;color:rgba(255,255,255,.72);font-size:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;margin-bottom:3px}
+.cat-banner-tagline{display:block;color:rgba(255,255,255,.95);font-size:14px;font-weight:700;letter-spacing:-.01em}
 footer{text-align:center;padding:20px;font-size:11px;color:var(--silver);border-top:1px solid var(--light-gray);margin-top:40px}
 
 @media(max-width:480px){
@@ -198,6 +205,7 @@ footer{text-align:center;padding:20px;font-size:11px;color:var(--silver);border-
   <div class="main-tabs-inner">
     <button class="main-tab active" id="tab-calendar" onclick="switchMainTab('calendar')">달력</button>
     <button class="main-tab" id="tab-records" onclick="switchMainTab('records')">출결 기록</button>
+    <button class="main-tab" id="tab-stats" onclick="switchMainTab('stats')">출석률</button>
   </div>
 </div>
 
@@ -225,7 +233,13 @@ footer{text-align:center;padding:20px;font-size:11px;color:var(--silver);border-
       <div class="cal-grid" id="calGrid"></div>
     </div>
     <div id="detailPanel"></div>
-    <div class="stats-section" id="statsSection"></div>
+    <div class="cat-banner" id="catBanner">
+      <img src="download.jpg" alt="드럼 치는 고양이" class="cat-banner-img">
+      <div class="cat-banner-overlay">
+        <span class="cat-banner-label">Beat Check</span>
+        <span class="cat-banner-tagline">오늘도 열심히 두드려봐요 🥁</span>
+      </div>
+    </div>
   </div>
 
   <!-- Records View -->
@@ -233,6 +247,12 @@ footer{text-align:center;padding:20px;font-size:11px;color:var(--silver);border-
     <div class="records-header"><span class="records-title">출결 기록</span></div>
     <div class="records-filter" id="recordsFilter"></div>
     <div class="records-list" id="recordsList"></div>
+  </div>
+
+  <!-- Stats View -->
+  <div id="statsView" class="view-section hidden">
+    <div class="records-header"><span class="records-title">출석률</span></div>
+    <div class="stats-section" id="statsSection"></div>
   </div>
 </div>
 
@@ -375,8 +395,8 @@ function renderStats(){
     });
   });
   const students=Object.entries(sm).filter(([,v])=>v.sessions>0).sort(([,a],[,b])=>(b.present/Math.max(b.sessions,1))-(a.present/Math.max(a.sessions,1)));
-  if(!students.length){sec.innerHTML='';return}
-  sec.innerHTML=`<div class="stats-title">출석률</div><div class="stats-grid">${students.map(([id,data])=>{const pct=data.sessions>0?Math.round(data.present/data.sessions*100):0;return`<div class="stat-card"><div class="stat-name">${data.name}</div><div class="stat-bar-row"><div class="stat-bar-bg"><div class="stat-bar-fill" style="width:${pct}%"></div></div><span class="stat-pct">${pct}%</span></div><div class="stat-sub">${data.present}/${data.sessions}회</div></div>`}).join('')}</div>`;
+  if(!students.length){sec.innerHTML='<div class="records-empty"><div class="empty-icon">📊</div><p style="font-size:14px;color:var(--silver)">아직 출석 기록이 없습니다</p></div>';return}
+  sec.innerHTML=`<div class="stats-grid">${students.map(([id,data])=>{const pct=data.sessions>0?Math.round(data.present/data.sessions*100):0;return`<div class="stat-card"><div class="stat-name">${data.name}</div><div class="stat-bar-row"><div class="stat-bar-bg"><div class="stat-bar-fill" style="width:${pct}%"></div></div><span class="stat-pct">${pct}%</span></div><div class="stat-sub">${data.present}/${data.sessions}회</div></div>`}).join('')}</div>`;
 }
 
 // ── Records ──
@@ -423,9 +443,12 @@ function switchMainTab(tab){
   currentMainTab=tab;
   document.getElementById('calendarView').classList.toggle('hidden',tab!=='calendar');
   document.getElementById('recordsView').classList.toggle('hidden',tab!=='records');
+  document.getElementById('statsView').classList.toggle('hidden',tab!=='stats');
   document.getElementById('tab-calendar').classList.toggle('active',tab==='calendar');
   document.getElementById('tab-records').classList.toggle('active',tab==='records');
+  document.getElementById('tab-stats').classList.toggle('active',tab==='stats');
   if(tab==='records')renderRecords();
+  if(tab==='stats')renderStats();
 }
 
 function changeMonth(dir){
