@@ -122,13 +122,18 @@ body{font-family:'Pretendard',ui-sans-serif,system-ui,-apple-system,sans-serif;b
 .stat-sub{margin-top:5px;font-size:11px;color:var(--silver)}
 .stat-head-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
 .stat-head-row .stat-name{margin-bottom:0}
-.stat-cycles{font-size:10px;color:var(--stone);background:var(--light-gray);border-radius:9999px;padding:2px 7px;font-weight:500;white-space:nowrap;flex-shrink:0}
-.cycle-row{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:10px}
-.cycle-dots{display:flex;gap:4px;align-items:center}
-.cycle-dot{width:9px;height:9px;border-radius:9999px;background:var(--light-gray)}
+.stat-cycles{font-size:10px;color:var(--stone);background:rgba(0,0,0,.08);border-radius:9999px;padding:2px 7px;font-weight:500;white-space:nowrap;flex-shrink:0}
+.cycle-row{display:flex;align-items:flex-start;justify-content:space-between;gap:6px;margin-bottom:10px}
+.cycle-dots{display:flex;gap:7px;align-items:flex-start}
+.cycle-dot-wrap{display:flex;flex-direction:column;align-items:center;gap:3px}
+.cycle-dot{width:12px;height:12px;border-radius:9999px;background:rgba(0,0,0,.13);cursor:pointer;transition:background .18s,transform .15s;flex-shrink:0}
+.cycle-dot:hover{transform:scale(1.28)}
 .cycle-dot.filled{background:var(--black)}
-.cycle-badge{font-size:10px;color:var(--stone);white-space:nowrap}
+.cycle-date{font-size:9px;color:var(--stone);line-height:1;min-height:10px;opacity:.75;white-space:nowrap}
+.cycle-badge{font-size:10px;color:var(--stone);white-space:nowrap;padding-top:1px}
 .cycle-badge.fee-due{color:#c2410c;font-weight:700}
+.cycle-complete-btn{font-family:'Pretendard',sans-serif;font-size:10px;color:var(--white);background:#c2410c;border:none;border-radius:9999px;padding:3px 11px;cursor:pointer;font-weight:600;display:block;margin-bottom:8px;margin-left:auto}
+.cycle-complete-btn:hover{background:#9a3412}
 
 .records-header{margin-bottom:16px}
 .records-title{font-size:20px;font-weight:700;letter-spacing:-.03em;color:var(--black)}
@@ -383,10 +388,31 @@ function renderDetail(animate=false){
 
 function switchTab(dk,sid){activeSessionTab[dk]=sid;renderDetail()}
 
+const CARD_COLORS=['#eff6ff','#f0fdf4','#fdf4ff','#fff7ed','#fdf2f8','#f0fdfa','#fefce8','#fef2f2','#f5f3ff','#ecfeff','#fff1f2','#f0f9ff'];
+function strHash(s){let h=5381;for(let i=0;i<s.length;i++)h=((h<<5)+h)+s.charCodeAt(i);return h>>>0;}
+function loadCycleData(){try{return JSON.parse(localStorage.getItem('beatcheck_cycle')||'{}')}catch(e){return{}}}
+function saveCycleData(d){localStorage.setItem('beatcheck_cycle',JSON.stringify(d))}
+let cycleData=loadCycleData();
+function toggleCycleSession(sid,idx){
+  if(!cycleData[sid])cycleData[sid]={completedCycles:0,sessions:[null,null,null,null]};
+  const s=cycleData[sid];
+  if(!s.sessions||s.sessions.length!==4)s.sessions=[null,null,null,null];
+  if(s.sessions[idx])s.sessions[idx]=null;
+  else{const t=new Date();s.sessions[idx]=`${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}-${String(t.getDate()).padStart(2,'0')}`;}
+  saveCycleData(cycleData);renderStats();
+}
+function completeCycle(sid){
+  if(!cycleData[sid])cycleData[sid]={completedCycles:0,sessions:[null,null,null,null]};
+  cycleData[sid].completedCycles=(cycleData[sid].completedCycles||0)+1;
+  cycleData[sid].sessions=[null,null,null,null];
+  saveCycleData(cycleData);renderStats();
+}
 function renderStats(){
   const sec=document.getElementById('statsSection');
-  const sm={};
-  Object.values(SCHEDULE).forEach(d=>d.sessions.forEach(s=>s.students.forEach(st=>{if(!sm[st.id])sm[st.id]={name:st.name,sessions:0,present:0}})));
+  const sm={};const orderedIds=[];
+  Object.values(SCHEDULE).forEach(d=>d.sessions.forEach(s=>s.students.forEach(st=>{
+    if(!sm[st.id]){sm[st.id]={name:st.name,sessions:0,present:0};orderedIds.push(st.id);}
+  })));
   const todayD=new Date(today.getFullYear(),today.getMonth(),today.getDate());
   Object.entries(attendance).forEach(([dk,records])=>{
     const{y,m,d}=parseDK(dk);if(new Date(y,m,d)>todayD)return;
@@ -396,17 +422,22 @@ function renderStats(){
       else if(val===false)sm[sid].sessions++;
     });
   });
-  const students=Object.entries(sm).filter(([,v])=>v.sessions>0).sort(([,a],[,b])=>(b.present/Math.max(b.sessions,1))-(a.present/Math.max(a.sessions,1)));
-  if(!students.length){sec.innerHTML='<div class="records-empty"><div class="empty-icon">📊</div><p style="font-size:14px;color:var(--silver)">아직 출석 기록이 없습니다</p></div>';return}
-  sec.innerHTML=`<div class="stats-grid">${students.map(([id,data])=>{
+  if(!orderedIds.length){sec.innerHTML='<div class="records-empty"><div class="empty-icon">📊</div><p style="font-size:14px;color:var(--silver)">아직 출석 기록이 없습니다</p></div>';return}
+  sec.innerHTML=`<div class="stats-grid">${orderedIds.map(id=>{
+    const data=sm[id];
     const pct=data.sessions>0?Math.round(data.present/data.sessions*100):0;
-    const isFeeDue=data.present>0&&data.present%4===0;
-    const cyclePos=isFeeDue?4:data.present%4;
-    const completedCycles=Math.floor(data.present/4);
-    const dots=Array(4).fill(0).map((_,i)=>`<span class="cycle-dot${i<cyclePos?' filled':''}"></span>`).join('');
-    const badgeText=isFeeDue?'레슨비 납부 시점!':`${4-cyclePos}회 후 레슨비`;
-    const badgeCls=isFeeDue?'cycle-badge fee-due':'cycle-badge';
-    return`<div class="stat-card"><div class="stat-head-row"><div class="stat-name">${data.name}</div><span class="stat-cycles">${completedCycles}사이클</span></div><div class="cycle-row"><div class="cycle-dots">${dots}</div><span class="${badgeCls}">${badgeText}</span></div><div class="stat-bar-row"><div class="stat-bar-bg"><div class="stat-bar-fill" style="width:${pct}%"></div></div><span class="stat-pct">${pct}%</span></div><div class="stat-sub">출석 ${data.present}/${data.sessions}회</div></div>`;
+    const cd=cycleData[id]||{completedCycles:0,sessions:[null,null,null,null]};
+    const sess=cd.sessions&&cd.sessions.length===4?cd.sessions:[null,null,null,null];
+    const filledCount=sess.filter(x=>x!==null).length;
+    const isFeeDue=filledCount===4;
+    const bgColor=CARD_COLORS[strHash(id)%CARD_COLORS.length];
+    const dots=sess.map((date,i)=>{
+      const dl=date?`${parseInt(date.split('-')[1])}/${parseInt(date.split('-')[2])}`:''
+      return`<div class="cycle-dot-wrap"><span class="cycle-dot${date?' filled':''}" onclick="toggleCycleSession('${id}',${i})"></span><span class="cycle-date">${dl}</span></div>`;
+    }).join('');
+    const rightBadge=isFeeDue?`<span class="cycle-badge fee-due">레슨비!</span>`:`<span class="cycle-badge">${4-filledCount}회 후 레슨비</span>`;
+    const completeBtn=isFeeDue?`<button class="cycle-complete-btn" onclick="completeCycle('${id}')">사이클 완료</button>`:'';
+    return`<div class="stat-card" style="background:${bgColor}"><div class="stat-head-row"><div class="stat-name">${data.name}</div><span class="stat-cycles">${cd.completedCycles||0}사이클</span></div><div class="cycle-row"><div class="cycle-dots">${dots}</div>${rightBadge}</div>${completeBtn}<div class="stat-bar-row"><div class="stat-bar-bg"><div class="stat-bar-fill" style="width:${pct}%"></div></div><span class="stat-pct">${pct}%</span></div><div class="stat-sub">출석 ${data.present}/${data.sessions}회</div></div>`;
   }).join('')}</div>`;
 }
 
