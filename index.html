@@ -120,6 +120,15 @@ body{font-family:'Pretendard',ui-sans-serif,system-ui,-apple-system,sans-serif;b
 .stat-bar-fill{height:100%;background:var(--black);border-radius:9999px;transition:width .5s ease}
 .stat-pct{font-size:12px;color:var(--near-black);font-weight:600;min-width:28px;text-align:right}
 .stat-sub{margin-top:5px;font-size:11px;color:var(--silver)}
+.stat-head-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.stat-head-row .stat-name{margin-bottom:0}
+.stat-cycles{font-size:10px;color:var(--stone);background:var(--light-gray);border-radius:9999px;padding:2px 7px;font-weight:500;white-space:nowrap;flex-shrink:0}
+.cycle-row{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:10px}
+.cycle-dots{display:flex;gap:4px;align-items:center}
+.cycle-dot{width:9px;height:9px;border-radius:9999px;background:var(--light-gray)}
+.cycle-dot.filled{background:var(--black)}
+.cycle-badge{font-size:10px;color:var(--stone);white-space:nowrap}
+.cycle-badge.fee-due{color:#c2410c;font-weight:700}
 
 .records-header{margin-bottom:16px}
 .records-title{font-size:20px;font-weight:700;letter-spacing:-.03em;color:var(--black)}
@@ -389,7 +398,16 @@ function renderStats(){
   });
   const students=Object.entries(sm).filter(([,v])=>v.sessions>0).sort(([,a],[,b])=>(b.present/Math.max(b.sessions,1))-(a.present/Math.max(a.sessions,1)));
   if(!students.length){sec.innerHTML='<div class="records-empty"><div class="empty-icon">📊</div><p style="font-size:14px;color:var(--silver)">아직 출석 기록이 없습니다</p></div>';return}
-  sec.innerHTML=`<div class="stats-grid">${students.map(([id,data])=>{const pct=data.sessions>0?Math.round(data.present/data.sessions*100):0;return`<div class="stat-card"><div class="stat-name">${data.name}</div><div class="stat-bar-row"><div class="stat-bar-bg"><div class="stat-bar-fill" style="width:${pct}%"></div></div><span class="stat-pct">${pct}%</span></div><div class="stat-sub">${data.present}/${data.sessions}회</div></div>`}).join('')}</div>`;
+  sec.innerHTML=`<div class="stats-grid">${students.map(([id,data])=>{
+    const pct=data.sessions>0?Math.round(data.present/data.sessions*100):0;
+    const isFeeDue=data.present>0&&data.present%4===0;
+    const cyclePos=isFeeDue?4:data.present%4;
+    const completedCycles=Math.floor(data.present/4);
+    const dots=Array(4).fill(0).map((_,i)=>`<span class="cycle-dot${i<cyclePos?' filled':''}"></span>`).join('');
+    const badgeText=isFeeDue?'레슨비 납부 시점!':`${4-cyclePos}회 후 레슨비`;
+    const badgeCls=isFeeDue?'cycle-badge fee-due':'cycle-badge';
+    return`<div class="stat-card"><div class="stat-head-row"><div class="stat-name">${data.name}</div><span class="stat-cycles">${completedCycles}사이클</span></div><div class="cycle-row"><div class="cycle-dots">${dots}</div><span class="${badgeCls}">${badgeText}</span></div><div class="stat-bar-row"><div class="stat-bar-bg"><div class="stat-bar-fill" style="width:${pct}%"></div></div><span class="stat-pct">${pct}%</span></div><div class="stat-sub">출석 ${data.present}/${data.sessions}회</div></div>`;
+  }).join('')}</div>`;
 }
 
 function changeRecordsWeek(dir){const d=new Date(recordsWeekStart);d.setDate(d.getDate()+dir*7);recordsWeekStart=d;renderRecords()}
