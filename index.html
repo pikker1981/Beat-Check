@@ -128,7 +128,7 @@ body{font-family:'Pretendard',ui-sans-serif,system-ui,-apple-system,sans-serif;b
   50%{box-shadow:0 0 22px 8px rgba(99,102,241,.68),0 0 48px 16px rgba(139,92,246,.4),0 0 72px 24px rgba(99,102,241,.14)}
 }
 @keyframes cardShine{0%{left:-80%}60%,100%{left:160%}}
-.flip-cards-row{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-bottom:10px}
+.flip-cards-row{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-bottom:10px;cursor:pointer}
 .flip-card{aspect-ratio:3/4;perspective:600px;cursor:pointer}
 .flip-card-inner{width:100%;height:100%;transform-style:preserve-3d;transition:transform .55s cubic-bezier(.34,1.56,.64,1);position:relative;border-radius:7px}
 .flip-card.flipped .flip-card-inner{transform:rotateY(180deg)}
@@ -283,10 +283,9 @@ const SCHEDULE={
   2:{label:'화요일',sessions:[{id:'tue',location:'숭의교회',time:null,students:[{id:'teacher1',name:'선생님'},{id:'teacher2',name:'여자 선생님'}]}]},
   3:{label:'수요일',sessions:[{id:'wed',location:'부평구청 연습실',time:null,students:[{id:'chanyoung',name:'찬영'}]}]},
   6:{label:'토요일',sessions:[
-    {id:'sat-am',location:'안양성결교회',time:'오전',students:[{id:'dael',name:'다엘'},{id:'jihu',name:'지후'},{id:'jian',name:'지안'},{id:'jonghwa',name:'종화'},{id:'siwon',name:'시원'},{id:'reumi',name:'름이'}]},
+    {id:'sat-am',location:'안양성결교회',time:'오전',students:[{id:'reumi',name:'름이'}]},
     {id:'sat-pm',location:'시흥중앙성결교회',time:'오후',students:[{id:'junhyuk',name:'준혁'},{id:'junseo',name:'준서'},{id:'hangyul',name:'한결'}]}
-  ]},
-  0:{label:'일요일',sessions:[{id:'sun-pm',location:'',time:'오후 3시',students:[{id:'eunhyuk',name:'은혁'},{id:'uije',name:'위제'}]}]}
+  ]}
 };
 
 const ALL_STUDENTS={};
@@ -405,7 +404,17 @@ function strHash(s){let h=5381;for(let i=0;i<s.length;i++)h=((h<<5)+h)+s.charCod
 function loadCycleData(){try{return JSON.parse(localStorage.getItem('beatcheck_cycle')||'{}')}catch(e){return{}}}
 function saveCycleData(d){localStorage.setItem('beatcheck_cycle',JSON.stringify(d))}
 let cycleData=loadCycleData();
-function toggleCycleSession(sid,idx){
+function advanceCycle(sid){
+  if(!cycleData[sid])cycleData[sid]={completedCycles:0,sessions:[null,null,null,null]};
+  const s=cycleData[sid];
+  if(!s.sessions||s.sessions.length!==4)s.sessions=[null,null,null,null];
+  const next=s.sessions.findIndex(x=>x===null);
+  if(next===-1)return;
+  const t=new Date();s.sessions[next]=`${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}-${String(t.getDate()).padStart(2,'0')}`;
+  saveCycleData(cycleData);renderStats();
+}
+function toggleCycleSession(sid,idx,e){
+  if(e)e.stopPropagation();
   if(!cycleData[sid])cycleData[sid]={completedCycles:0,sessions:[null,null,null,null]};
   const s=cycleData[sid];
   if(!s.sessions||s.sessions.length!==4)s.sessions=[null,null,null,null];
@@ -444,12 +453,12 @@ function renderStats(){
     const isFeeDue=filledCount===4;
     const bgColor=CARD_COLORS[strHash(id)%CARD_COLORS.length];
     const flipCards=sess.map((date,i)=>
-      `<div class="flip-card${date?' flipped':''}" onclick="toggleCycleSession('${id}',${i})"><div class="flip-card-inner"><div class="flip-card-front"></div><div class="flip-card-back">${i+1}</div></div></div>`
+      `<div class="flip-card${date?' flipped':''}" onclick="toggleCycleSession('${id}',${i},event)"><div class="flip-card-inner"><div class="flip-card-front"></div><div class="flip-card-back">${i+1}</div></div></div>`
     ).join('');
     const cycleInfoRow=isFeeDue
       ?`<div class="cycle-info-row"><span class="cycle-badge fee-due">레슨비 납부 시점!</span><button class="cycle-complete-btn" onclick="completeCycle('${id}')">사이클 완료</button></div>`
       :`<div class="cycle-info-row"><span class="cycle-badge">${4-filledCount}회 후 레슨비</span></div>`;
-    return`<div class="stat-card${isFeeDue?' all-complete':''}" style="background:${bgColor}"><div class="stat-head-row"><div class="stat-name">${data.name}</div><span class="stat-cycles">${cd.completedCycles||0}사이클</span></div><div class="flip-cards-row">${flipCards}</div>${cycleInfoRow}<div class="stat-bar-row"><div class="stat-bar-bg"><div class="stat-bar-fill" style="width:${pct}%"></div></div><span class="stat-pct">${pct}%</span></div><div class="stat-sub">출석 ${data.present}/${data.sessions}회</div></div>`;
+    return`<div class="stat-card${isFeeDue?' all-complete':''}" style="background:${bgColor}"><div class="stat-head-row"><div class="stat-name">${data.name}</div><span class="stat-cycles">${cd.completedCycles||0}사이클</span></div><div class="flip-cards-row" onclick="advanceCycle('${id}')">${flipCards}</div>${cycleInfoRow}<div class="stat-bar-row"><div class="stat-bar-bg"><div class="stat-bar-fill" style="width:${pct}%"></div></div><span class="stat-pct">${pct}%</span></div><div class="stat-sub">출석 ${data.present}/${data.sessions}회</div></div>`;
   }).join('')}</div>`;
 }
 
