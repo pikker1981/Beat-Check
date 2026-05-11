@@ -123,16 +123,28 @@ body{font-family:'Pretendard',ui-sans-serif,system-ui,-apple-system,sans-serif;b
 .stat-head-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
 .stat-head-row .stat-name{margin-bottom:0}
 .stat-cycles{font-size:10px;color:var(--stone);background:rgba(0,0,0,.08);border-radius:9999px;padding:2px 7px;font-weight:500;white-space:nowrap;flex-shrink:0}
-.cycle-row{display:flex;align-items:flex-start;justify-content:space-between;gap:6px;margin-bottom:10px}
-.cycle-dots{display:flex;gap:7px;align-items:flex-start}
-.cycle-dot-wrap{display:flex;flex-direction:column;align-items:center;gap:3px}
-.cycle-dot{width:12px;height:12px;border-radius:9999px;background:rgba(0,0,0,.13);cursor:pointer;transition:background .18s,transform .15s;flex-shrink:0}
-.cycle-dot:hover{transform:scale(1.28)}
-.cycle-dot.filled{background:var(--black)}
-.cycle-date{font-size:9px;color:var(--stone);line-height:1;min-height:10px;opacity:.75;white-space:nowrap}
-.cycle-badge{font-size:10px;color:var(--stone);white-space:nowrap;padding-top:1px}
+@keyframes crystalAura{
+  0%,100%{box-shadow:0 0 10px 3px rgba(99,102,241,.4),0 0 24px 6px rgba(139,92,246,.22)}
+  50%{box-shadow:0 0 22px 8px rgba(99,102,241,.68),0 0 48px 16px rgba(139,92,246,.4),0 0 72px 24px rgba(99,102,241,.14)}
+}
+@keyframes cardShine{0%{left:-80%}60%,100%{left:160%}}
+.flip-cards-row{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-bottom:10px}
+.flip-card{aspect-ratio:3/4;perspective:600px;cursor:pointer}
+.flip-card-inner{width:100%;height:100%;transform-style:preserve-3d;transition:transform .55s cubic-bezier(.34,1.56,.64,1);position:relative;border-radius:7px}
+.flip-card.flipped .flip-card-inner{transform:rotateY(180deg)}
+.flip-card-front,.flip-card-back{position:absolute;inset:0;border-radius:7px;backface-visibility:hidden;display:flex;align-items:center;justify-content:center}
+.flip-card-front{background:linear-gradient(135deg,rgba(255,255,255,.88) 0%,rgba(210,225,255,.58) 50%,rgba(255,255,255,.72) 100%);border:1px solid rgba(180,195,230,.55);overflow:hidden}
+.flip-card-front::after{content:'';position:absolute;top:0;left:-80%;width:50%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.58),transparent);animation:cardShine 3.5s ease-in-out infinite;transform:skewX(-15deg)}
+.flip-card:nth-child(2) .flip-card-front::after{animation-delay:.9s}
+.flip-card:nth-child(3) .flip-card-front::after{animation-delay:1.8s}
+.flip-card:nth-child(4) .flip-card-front::after{animation-delay:2.7s}
+.flip-card-back{background:linear-gradient(145deg,#1a5fc8 0%,#003d99 100%);transform:rotateY(180deg);color:#fff;font-size:15px;font-weight:700;text-shadow:0 1px 4px rgba(0,0,0,.3)}
+.stat-card.all-complete{animation:crystalAura 1.8s ease-in-out infinite;border-color:rgba(99,102,241,.45)!important}
+.stat-card.all-complete .flip-card-back{background:linear-gradient(145deg,#7c3aed 0%,#4f46e5 50%,#7c3aed 100%)}
+.cycle-info-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.cycle-badge{font-size:10px;color:var(--stone);white-space:nowrap}
 .cycle-badge.fee-due{color:#c2410c;font-weight:700}
-.cycle-complete-btn{font-family:'Pretendard',sans-serif;font-size:10px;color:var(--white);background:#c2410c;border:none;border-radius:9999px;padding:3px 11px;cursor:pointer;font-weight:600;display:block;margin-bottom:8px;margin-left:auto}
+.cycle-complete-btn{font-family:'Pretendard',sans-serif;font-size:10px;color:var(--white);background:#c2410c;border:none;border-radius:9999px;padding:3px 11px;cursor:pointer;font-weight:600}
 .cycle-complete-btn:hover{background:#9a3412}
 
 .records-header{margin-bottom:16px}
@@ -431,13 +443,13 @@ function renderStats(){
     const filledCount=sess.filter(x=>x!==null).length;
     const isFeeDue=filledCount===4;
     const bgColor=CARD_COLORS[strHash(id)%CARD_COLORS.length];
-    const dots=sess.map((date,i)=>{
-      const dl=date?`${parseInt(date.split('-')[1])}/${parseInt(date.split('-')[2])}`:''
-      return`<div class="cycle-dot-wrap"><span class="cycle-dot${date?' filled':''}" onclick="toggleCycleSession('${id}',${i})"></span><span class="cycle-date">${dl}</span></div>`;
-    }).join('');
-    const rightBadge=isFeeDue?`<span class="cycle-badge fee-due">레슨비!</span>`:`<span class="cycle-badge">${4-filledCount}회 후 레슨비</span>`;
-    const completeBtn=isFeeDue?`<button class="cycle-complete-btn" onclick="completeCycle('${id}')">사이클 완료</button>`:'';
-    return`<div class="stat-card" style="background:${bgColor}"><div class="stat-head-row"><div class="stat-name">${data.name}</div><span class="stat-cycles">${cd.completedCycles||0}사이클</span></div><div class="cycle-row"><div class="cycle-dots">${dots}</div>${rightBadge}</div>${completeBtn}<div class="stat-bar-row"><div class="stat-bar-bg"><div class="stat-bar-fill" style="width:${pct}%"></div></div><span class="stat-pct">${pct}%</span></div><div class="stat-sub">출석 ${data.present}/${data.sessions}회</div></div>`;
+    const flipCards=sess.map((date,i)=>
+      `<div class="flip-card${date?' flipped':''}" onclick="toggleCycleSession('${id}',${i})"><div class="flip-card-inner"><div class="flip-card-front"></div><div class="flip-card-back">${i+1}</div></div></div>`
+    ).join('');
+    const cycleInfoRow=isFeeDue
+      ?`<div class="cycle-info-row"><span class="cycle-badge fee-due">레슨비 납부 시점!</span><button class="cycle-complete-btn" onclick="completeCycle('${id}')">사이클 완료</button></div>`
+      :`<div class="cycle-info-row"><span class="cycle-badge">${4-filledCount}회 후 레슨비</span></div>`;
+    return`<div class="stat-card${isFeeDue?' all-complete':''}" style="background:${bgColor}"><div class="stat-head-row"><div class="stat-name">${data.name}</div><span class="stat-cycles">${cd.completedCycles||0}사이클</span></div><div class="flip-cards-row">${flipCards}</div>${cycleInfoRow}<div class="stat-bar-row"><div class="stat-bar-bg"><div class="stat-bar-fill" style="width:${pct}%"></div></div><span class="stat-pct">${pct}%</span></div><div class="stat-sub">출석 ${data.present}/${data.sessions}회</div></div>`;
   }).join('')}</div>`;
 }
 
